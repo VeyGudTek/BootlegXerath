@@ -38,7 +38,7 @@ class Projectile extends Cursor{
 }
 
 class Enemy extends Cursor{
-  constructor(x, y, health, cooldown, size, speed, projectile_speed, projectile_size, projectile_damage, color){
+  constructor(x, y, health, cooldown, size, speed, projectile_speed, projectile_size, projectile_damage, color, points){
     super(x, y)
     this.timer = 0
     this.health = health
@@ -50,6 +50,7 @@ class Enemy extends Cursor{
     this.projectile_size = projectile_size
     this.projectile_damage = projectile_damage
     this.color = color
+    this.points = points
   }
 
   shoot(player){

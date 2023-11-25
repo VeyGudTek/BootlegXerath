@@ -2,10 +2,13 @@ let player, cursor
 let enemy_list, projectile_list
 let player_projectile_list, w_list, q_list
 let damage_alpha
+let score, game_over
 
 function setup() {
   createCanvas(1280, 720)
   damage_alpha = 0
+  score = 0
+  game_over = false
   enemy_list = []
   projectile_list = []
   player_projectile_list = []
@@ -30,19 +33,32 @@ function right_click(event){
 function draw() {
   background(255)
 
-  if (frameCount % 200 == 0){
-    spawn_enemy()
-  }
-
-  enemy_functions()
-  projectile_functions()
-  player_functions()
-  player_spell_functions()
-  draw_resources()
-
-  background(255, 0, 0, damage_alpha)
-  if (damage_alpha > 0){
-    damage_alpha -= 2
+  if (!game_over){
+    if (frameCount % 175 == 0){
+      spawn_enemy()
+    }
+  
+    enemy_functions()
+    projectile_functions()
+    player_functions()
+    player_spell_functions()
+    draw_resources()
+  
+    background(255, 0, 0, damage_alpha)
+    if (damage_alpha > 0){
+      damage_alpha -= 2
+    }
+  } else {
+    fill("black")
+    strokeWeight(1)
+    textSize(32)
+    textAlign(CENTER)
+    text("GAME OVER", 640, 300)
+    textSize(24)
+    strokeWeight(0)
+    text("Score: " + score, 640, 360)
+    text("Press 'r' to restart", 640, 400)
+    textAlign(LEFT)
   }
 }
 
@@ -65,11 +81,13 @@ function spawn_enemy(){
   }
 
   let enemy
-  choice = random([1, 2, 3, 4])
-  if (choice == 1){
-    enemy = new Enemy(x, y, 200, 67, 50, 2, 7, 15, 20, "Maroon")
-  } else{
-    enemy = new Enemy(x, y, 100, 183, 30, 3, 5, 10, 10, "LightCoral")
+  choice = random([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  if (choice < 3){
+    enemy = new Enemy(x, y, 300, 122, 70, 1, 5, 20, 40, "Maroon", 40)
+  } else if(choice < 6){
+    enemy = new Enemy(x, y, 200, 67, 50, 2, 7, 15, 20, "IndianRed", 20)
+  }else {
+    enemy = new Enemy(x, y, 100, 183, 30, 3, 5, 10, 10, "LightCoral", 10)
   }
   enemy_list.push(enemy)
 }
@@ -98,12 +116,17 @@ function projectile_functions(){
     if(player.health < 0){
       player.health = 0
     }
+
+    if(player.health == 0){
+      game_over = true
+    }
   })
 }
 
 function enemy_functions(){
   enemy_list.forEach((enemy) => {
     if (enemy.health <= 0){
+      score += enemy.points
       index = enemy_list.indexOf(enemy)
       if (index > -1) {
         enemy_list.splice(index, 1);
@@ -181,6 +204,12 @@ function player_spell_functions(){
 }
 
 function draw_resources(){
+  fill("black")
+  strokeWeight(1)
+  textSize(32)
+  text("Score: " + score, 100, 100)
+
+
   stroke(1)
   strokeWeight(5)
   
@@ -192,7 +221,14 @@ function draw_resources(){
   rect(540, 525, 50,  50 * player.q_cooldown/120)
   rect(640, 525, 50,  50 *player.w_cooldown/180)
   rect(740, 525, 50,  50 *player.e_cooldown/60)
+  fill("black")
+  strokeWeight(1)
+  textSize(32)
+  text("Q", 551, 559)
+  text("W", 650, 559)
+  text("E", 754, 559)
 
+  strokeWeight(5)
   fill("grey")
   rect(480, 600, 360, 20)
   fill("red")
@@ -205,18 +241,40 @@ function draw_resources(){
 }
 
 function keyPressed(){
-  if (key == "q"){
-    player.q_down()
-  }else if (key == "w"){
-    w = player.w(new Cursor(mouseX, mouseY))
-    if(w){
-      w_list.push(w)
+  if (!game_over){
+    if (key == "q"){
+      player.q_down()
+    }else if (key == "w"){
+      w = player.w(new Cursor(mouseX, mouseY))
+      if(w){
+        w_list.push(w)
+      }
+    }else if (key == "e"){
+       projectile = player.e(new Cursor(mouseX, mouseY))
+       if (projectile){
+        player_projectile_list.push(projectile)
+       }
     }
-  }else if (key == "e"){
-     projectile = player.e(new Cursor(mouseX, mouseY))
-     if (projectile){
-      player_projectile_list.push(projectile)
-     }
+  } else if (key == "r"){
+    cursor.x = 640
+    cursor.y = 360
+    player.x = 640
+    player.y = 360
+    player.health = 50
+    player.mana = 50
+    player.q_cooldown = 0
+    player.w_cooldown = 0
+    player.e_cooldown = 0
+    player.charging = false
+    player.q_length = 200
+    score = 0
+    damage_alpha = 0
+    enemy_list = []
+    projectile_list = []
+    player_projectile_list = []
+    q_list = []
+    w_list = []
+    game_over = false
   }
 }
 
